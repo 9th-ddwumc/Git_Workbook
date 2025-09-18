@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO 리스트</title>
+
+    <style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding-top: 50px;
+        height: 100px;
+        margin: 0;
+        background-color: #f0f2f5;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .app-container {
+        width: 50%;
+        max-width: 400px;
+        padding: 40px;
+        background: white;
+        border-radius: 16px; /* 모서리를 더 둥글게 */
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-weight: 800; /* 글자를 더 두껍게 */
+    }
+    #todo-form {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 40px;
+    }
+    #todo-input {
+        flex-grow: 1;
+        padding: 14px;
+        border: 2px solid #dee2e6; /* 기본 테두리 색상 */
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border-color 0.2s;
+    }
+    #todo-input:focus { /* 입력창을 클릭했을 때 */
+        border-color: #007bff; /* 파란색 테두리 */
+        outline: none; /* 기본 아웃라인 제거 */
+    }
+    #todo-form button {
+        padding: 0 20px;
+        border: none;
+        background-color: #28a745;
+        color: white;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .list-wrapper {
+        display: flex;
+        gap: 30px; /* 목록 사이 간격을 넓게 */
+    }
+    .list-container {
+        flex: 1;
+        /* 이전의 배경, 그림자, 패딩 스타일 제거 */
+    }
+    .list-container h2 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #343a40;
+        text-align: center;
+        margin-bottom: 20px;
+        border: none; /* 밑줄 제거 */
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+        min-height: 30px;
+    }
+    li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px; /* 내부 여백을 더 줌 */
+        background: #f8f9fa; /* 옅은 회색 배경 */
+        border-radius: 8px; /* 모서리 둥글게 */
+        margin-bottom: 10px; /* 항목 사이 간격 */
+        border-bottom: none; /* 밑줄 제거 */
+    }
+    li span {
+        font-size: 16px;
+    }
+    li button {
+        padding: 5px 12px;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 12px; /* 버튼 글자 크기 조정 */
+    }
+    .complete-btn { background-color: #28a745; } /* 완료 버튼도 초록색으로 변경 */
+    .delete-btn { background-color: #dc3545; }
+</style>
+</head>
+<body>
+
+    <div class="app-container">
+        <h1>TODO List</h1>
+        <form id="todo-form">
+            <input type="text" id="todo-input" placeholder="할 일 입력" autocomplete="off">
+            <button type="submit">할 일 추가</button>
+        </form>
+
+        <div class="list-wrapper">
+            <div class="list-container">
+                <h2>진행</h2>
+                <ul id="incomplete-list"></ul>
+            </div>
+
+            <div class="list-container">
+                <h2>완료</h2>
+                <ul id="completed-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const todoForm = document.getElementById('todo-form');
+        if (todoForm) { // todoForm이 null이 아닐 때만 실행
+            todoForm.addEventListener(
+                'submit', 
+                (event) => {
+                    event.preventDefault();
+                    const newTodoText = todoInput.value.trim();
+                    if (newTodoText) {
+                        addTodo(newTodoText);
+                        todoInput.value = '';
+                    }
+                }
+            );
+        }
+        const todoInput = document.getElementById('todo-input');
+        const incompleteList = document.getElementById('incomplete-list');
+        const completedList = document.getElementById('completed-list');
+
+        let todos = [];
+
+        function renderTodos() {
+            incompleteList.innerHTML = '';
+            completedList.innerHTML = '';
+
+            todos.forEach(todo => {
+                const li = document.createElement('li');
+                const span = document.createElement('span');
+                span.textContent = todo.text;
+                li.appendChild(span);
+
+                if (todo.completed) {
+                    li.classList.add('completed');
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = '삭제';
+                    deleteBtn.classList.add('delete-btn');
+                    deleteBtn.addEventListener('click', () => deleteTodo(todo.id));
+                    li.appendChild(deleteBtn);
+                    completedList.appendChild(li);
+                } else {
+                    const completeBtn = document.createElement('button');
+                    completeBtn.textContent = '완료';
+                    completeBtn.classList.add('complete-btn');
+                    completeBtn.addEventListener('click', () => toggleComplete(todo.id));
+                    li.appendChild(completeBtn);
+                    incompleteList.appendChild(li);
+                }
+            });
+        }
+
+        function addTodo(text) {
+            const newTodo = { id: Date.now(), text: text, completed: false };
+            todos.push(newTodo);
+            renderTodos();
+        }
+
+        function toggleComplete(id) {
+            todos = todos.map(todo =>
+                todo.id === id ? { ...todo, completed: true } : todo
+            );
+            renderTodos();
+        }
+
+        function deleteTodo(id) {
+            todos = todos.filter(todo => todo.id !== id);
+            renderTodos();
+        }
+
+        todoForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const newTodoText = todoInput.value.trim();
+            if (newTodoText) {
+                addTodo(newTodoText);
+                todoInput.value = '';
+            }
+        });
+        
+        renderTodos();
+    </script>
+    <script src="dist/app.js"></script>
+</body>
+</html>
